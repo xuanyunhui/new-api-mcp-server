@@ -1,0 +1,7 @@
+bin/
+server
+.git/
+docs/
+*.md
+!go.mod
+!go.sum

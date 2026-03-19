@@ -2,6 +2,7 @@ package observability
 
 import (
 	"context"
+	"strings"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -17,10 +18,14 @@ func SetupTracing(ctx context.Context, endpoint, serviceName string) (func(conte
 		return func(context.Context) error { return nil }, nil
 	}
 
-	exporter, err := otlptracehttp.New(ctx,
+	opts := []otlptracehttp.Option{
 		otlptracehttp.WithEndpoint(stripScheme(endpoint)),
-		otlptracehttp.WithInsecure(),
-	)
+	}
+	if !strings.HasPrefix(endpoint, "https://") {
+		opts = append(opts, otlptracehttp.WithInsecure())
+	}
+
+	exporter, err := otlptracehttp.New(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}

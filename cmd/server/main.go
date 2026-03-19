@@ -47,6 +47,7 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("setup tracing: %w", err)
 	}
+	defer shutdownTracing(context.Background())
 
 	promRegistry := prometheus.NewRegistry()
 	metrics := observability.NewMetrics(promRegistry)
@@ -127,10 +128,6 @@ func run() error {
 
 		shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer shutdownCancel()
-
-		if err := shutdownTracing(shutdownCtx); err != nil {
-			slog.Error("flush tracing failed", "error", err)
-		}
 
 		if err := metricsServer.Shutdown(shutdownCtx); err != nil {
 			slog.Error("metrics server shutdown failed", "error", err)

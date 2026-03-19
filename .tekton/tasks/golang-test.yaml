@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: golang-test
+spec:
+  params:
+    - name: flags
+      type: string
+      default: "-race -count=1"
+    - name: package
+      type: string
+      default: "./..."
+
+  workspaces:
+    - name: source
+
+  steps:
+    - name: test
+      image: registry.redhat.io/ubi10/go-toolset:10.1
+      workingDir: $(workspaces.source.path)
+      script: |
+        go test $(params.flags) $(params.package)

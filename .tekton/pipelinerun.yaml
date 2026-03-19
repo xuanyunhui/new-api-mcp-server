@@ -1,0 +1,21 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: new-api-mcp-server-run-
+spec:
+  pipelineRef:
+    name: new-api-mcp-server
+  params:
+    - name: revision
+      value: main
+    - name: version
+      value: latest
+  workspaces:
+    - name: source
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi

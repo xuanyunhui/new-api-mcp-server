@@ -1,0 +1,101 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: new-api-mcp-server
+spec:
+  params:
+    - name: repo-url
+      type: string
+      description: Git repository URL
+      default: https://github.com/xuanyunhui/new-api-mcp-server.git
+    - name: revision
+      type: string
+      description: Git revision (branch, tag, or commit)
+      default: main
+    - name: image
+      type: string
+      description: Target container image
+      default: image-registry.openshift-image-registry.svc:5000/mcp-servers/new-api-mcp-server
+    - name: version
+      type: string
+      description: Version tag for the image
+      default: latest
+
+  workspaces:
+    - name: source
+
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone
+        kind: ClusterTask
+      params:
+        - name: url
+          value: $(params.repo-url)
+        - name: revision
+          value: $(params.revision)
+      workspaces:
+        - name: output
+          workspace: source
+
+    - name: test
+      runAfter:
+        - clone
+      taskRef:
+        name: golang-test
+      params:
+        - name: flags
+          value: "-race -count=1"
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: integration-test
+      runAfter:
+        - test
+      taskRef:
+        name: golang-test
+      params:
+        - name: flags
+          value: "-tags=integration -count=1"
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: build-image
+      runAfter:
+        - integration-test
+      taskRef:
+        name: buildah
+        kind: ClusterTask
+      params:
+        - name: IMAGE
+          value: $(params.image):$(params.version)
+        - name: DOCKERFILE
+          value: ./Containerfile
+        - name: BUILD_EXTRA_ARGS
+          value: "--build-arg VERSION=$(params.version)"
+        - name: TLSVERIFY
+          value: "false"
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: tag-latest
+      runAfter:
+        - build-image
+      taskRef:
+        name: skopeo-copy
+        kind: ClusterTask
+      params:
+        - name: srcImageURL
+          value: "docker://$(params.image):$(params.version)"
+        - name: destImageURL
+          value: "docker://$(params.image):latest"
+        - name: srcTLSverify
+          value: "false"
+        - name: destTLSverify
+          value: "false"
+      workspaces:
+        - name: images-url
+          workspace: source

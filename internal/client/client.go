@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -73,9 +74,11 @@ func (c *Client) Do(ctx context.Context, source Source, method, path string, que
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	// Apply custom header parameters
+	// Apply custom header parameters (skip Authorization to prevent override)
 	for k, v := range headerParams {
-		req.Header.Set(k, v)
+		if !strings.EqualFold(k, "Authorization") {
+			req.Header.Set(k, v)
+		}
 	}
 
 	if len(queryParams) > 0 {

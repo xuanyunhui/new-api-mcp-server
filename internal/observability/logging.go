@@ -10,6 +10,17 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+var sensitiveKeys = map[string]bool{
+	"authorization": true,
+	"api_key":       true,
+	"apikey":        true,
+	"api-key":       true,
+	"token":         true,
+	"password":      true,
+	"secret":        true,
+	"credential":    true,
+}
+
 type traceHandler struct {
 	inner slog.Handler
 }
@@ -49,8 +60,7 @@ func SetupLogging(level, format string, consoleEnabled bool, otlpEndpoint string
 	opts := &slog.HandlerOptions{
 		Level: logLevel,
 		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-			key := strings.ToLower(a.Key)
-			if strings.Contains(key, "auth") || strings.Contains(key, "key") || strings.Contains(key, "token") || strings.Contains(key, "password") {
+			if sensitiveKeys[strings.ToLower(a.Key)] {
 				a.Value = slog.StringValue("[REDACTED]")
 			}
 			return a

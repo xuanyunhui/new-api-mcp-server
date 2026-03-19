@@ -94,7 +94,9 @@ func (h *Handler) MakeHandler(def openapi.ToolDef) mcp.ToolHandler {
 		}
 
 		// Call upstream
+		upstreamStart := time.Now()
 		resp, err := h.client.Do(ctx, h.source, def.Method, path, queryParams, headerParams, body)
+		upstreamDuration := time.Since(upstreamStart)
 		if err != nil {
 			slog.ErrorContext(ctx, "upstream request failed",
 				"tool", def.Name,
@@ -110,7 +112,7 @@ func (h *Handler) MakeHandler(def openapi.ToolDef) mcp.ToolHandler {
 			return errorResult(fmt.Sprintf("read response: %v", err)), nil
 		}
 
-		duration := time.Since(start)
+		toolDuration := time.Since(start)
 		isError := resp.StatusCode < 200 || resp.StatusCode >= 300
 		status := "success"
 		if isError {
@@ -120,15 +122,15 @@ func (h *Handler) MakeHandler(def openapi.ToolDef) mcp.ToolHandler {
 		// Record metrics
 		if h.metrics != nil {
 			h.metrics.ToolRequestsTotal.WithLabelValues(def.Name, status).Inc()
-			h.metrics.ToolRequestDuration.WithLabelValues(def.Name).Observe(duration.Seconds())
+			h.metrics.ToolRequestDuration.WithLabelValues(def.Name).Observe(toolDuration.Seconds())
 			h.metrics.UpstreamRequestsTotal.WithLabelValues(def.Method, def.Path, fmt.Sprintf("%d", resp.StatusCode)).Inc()
-			h.metrics.UpstreamRequestDuration.WithLabelValues(def.Method, def.Path).Observe(duration.Seconds())
+			h.metrics.UpstreamRequestDuration.WithLabelValues(def.Method, def.Path).Observe(upstreamDuration.Seconds())
 		}
 
 		slog.InfoContext(ctx, "tool call completed",
 			"tool", def.Name,
 			"status_code", resp.StatusCode,
-			"duration_ms", duration.Milliseconds(),
+			"duration_ms", toolDuration.Milliseconds(),
 		)
 
 		// Handle non-JSON response: base64 encode

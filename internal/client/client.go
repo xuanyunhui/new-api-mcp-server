@@ -39,7 +39,7 @@ func New(baseURL, relayKey, systemKey string, timeout time.Duration) *Client {
 	}
 }
 
-func (c *Client) Do(ctx context.Context, source Source, method, path string, queryParams map[string]string, body []byte) (*http.Response, error) {
+func (c *Client) Do(ctx context.Context, source Source, method, path string, queryParams map[string]string, headerParams map[string]string, body []byte) (*http.Response, error) {
 	ctx, span := tracer.Start(ctx, "upstream.request",
 		trace.WithAttributes(
 			attribute.String("http.method", method),
@@ -71,6 +71,11 @@ func (c *Client) Do(ctx context.Context, source Source, method, path string, que
 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+	}
+
+	// Apply custom header parameters
+	for k, v := range headerParams {
+		req.Header.Set(k, v)
 	}
 
 	if len(queryParams) > 0 {

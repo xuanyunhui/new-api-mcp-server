@@ -15,9 +15,10 @@ type ToolDef struct {
 	Tags        []string
 	InputSchema any
 
-	PathParams  []ParamDef
-	QueryParams []ParamDef
-	HasBody     bool
+	PathParams   []ParamDef
+	QueryParams  []ParamDef
+	HeaderParams []ParamDef
+	HasBody      bool
 }
 
 type ParamDef struct {
@@ -35,10 +36,18 @@ func Parse(specData []byte) ([]ToolDef, error) {
 	}
 
 	var defs []ToolDef
+	nameCount := map[string]int{}
 
 	for path, pathItem := range doc.Paths.Map() {
 		for method, op := range pathItem.Operations() {
 			def := buildToolDef(path, method, op)
+
+			// Deduplicate: if name already seen, append path slug
+			nameCount[def.Name]++
+			if nameCount[def.Name] > 1 {
+				def.Name = def.Name + "_" + sanitizeToolName(strings.ReplaceAll(strings.Trim(path, "/"), "/", "_"))
+			}
+
 			defs = append(defs, def)
 		}
 	}
@@ -107,6 +116,8 @@ func buildToolDef(path, method string, op *openapi3.Operation) ToolDef {
 			def.PathParams = append(def.PathParams, pd)
 		case "query":
 			def.QueryParams = append(def.QueryParams, pd)
+		case "header":
+			def.HeaderParams = append(def.HeaderParams, pd)
 		}
 	}
 
@@ -179,6 +190,40 @@ func schemaToMap(s *openapi3.Schema) map[string]any {
 
 	if s.Items != nil && s.Items.Value != nil {
 		m["items"] = schemaToMap(s.Items.Value)
+	}
+
+	// Composition keywords
+	if len(s.OneOf) > 0 {
+		oneOf := make([]any, 0, len(s.OneOf))
+		for _, ref := range s.OneOf {
+			if ref.Value != nil {
+				oneOf = append(oneOf, schemaToMap(ref.Value))
+			}
+		}
+		m["oneOf"] = oneOf
+	}
+	if len(s.AnyOf) > 0 {
+		anyOf := make([]any, 0, len(s.AnyOf))
+		for _, ref := range s.AnyOf {
+			if ref.Value != nil {
+				anyOf = append(anyOf, schemaToMap(ref.Value))
+			}
+		}
+		m["anyOf"] = anyOf
+	}
+	if len(s.AllOf) > 0 {
+		allOf := make([]any, 0, len(s.AllOf))
+		for _, ref := range s.AllOf {
+			if ref.Value != nil {
+				allOf = append(allOf, schemaToMap(ref.Value))
+			}
+		}
+		m["allOf"] = allOf
+	}
+
+	// Additional properties
+	if s.AdditionalProperties.Schema != nil && s.AdditionalProperties.Schema.Value != nil {
+		m["additionalProperties"] = schemaToMap(s.AdditionalProperties.Schema.Value)
 	}
 
 	return m

@@ -70,6 +70,17 @@ func (h *Handler) MakeHandler(def openapi.ToolDef) mcp.ToolHandler {
 			}
 		}
 
+		// Build header parameters
+		var headerParams map[string]string
+		if len(def.HeaderParams) > 0 {
+			headerParams = make(map[string]string)
+			for _, p := range def.HeaderParams {
+				if v, ok := args[p.Name]; ok {
+					headerParams[p.Name] = fmt.Sprintf("%v", v)
+				}
+			}
+		}
+
 		// Build request body
 		var body []byte
 		if def.HasBody {
@@ -83,7 +94,7 @@ func (h *Handler) MakeHandler(def openapi.ToolDef) mcp.ToolHandler {
 		}
 
 		// Call upstream
-		resp, err := h.client.Do(ctx, h.source, def.Method, path, queryParams, body)
+		resp, err := h.client.Do(ctx, h.source, def.Method, path, queryParams, headerParams, body)
 		if err != nil {
 			slog.ErrorContext(ctx, "upstream request failed",
 				"tool", def.Name,

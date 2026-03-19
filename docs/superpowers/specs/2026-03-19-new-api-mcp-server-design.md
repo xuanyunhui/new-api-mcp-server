@@ -13,6 +13,7 @@
 | HTTP 传输 | Streamable HTTP | MCP 新版推荐 |
 | 配置方式 | 环境变量 | 适合容器化部署 |
 | 模块路径 | github.com/QuantumNous/new-api-mcp-server | 与 new-api 同组织 |
+| OpenAPI 解析 | github.com/getkin/kin-openapi | 成熟的 OpenAPI 3.0 解析库，处理 $ref 解析 |
 
 ## 架构
 
@@ -72,6 +73,10 @@
 - **API tools** 命名：加 `api_` 前缀，如 `api_get_all_channels`（避免与 relay 侧同名端点冲突）
 - Tool description：取 OpenAPI 的 `summary` + `description`
 - Tool inputSchema：从 OpenAPI 的 `parameters`（path/query/header）+ `requestBody` 自动生成 JSON Schema
+- 使用 `kin-openapi` 解析 OpenAPI spec，自动处理 `$ref` 引用解析
+- 使用 go-sdk 的低级 `ServerTool` 结构体注册（非泛型 `AddTool[In, Out]`），以支持动态构建 `InputSchema`
+- operationId 缺失时，从 `{method}_{path_slug}` 生成（如 `get_api_channels`）
+- 启动时校验所有 tool 名称唯一性，重复则 fatal 退出
 
 ### 分组控制
 
@@ -159,8 +164,8 @@ MCP_METRICS_PATH=/metrics       # 默认 /metrics
 - 核心指标：
   - `mcp_tool_requests_total{tool, status}` — tool 调用计数
   - `mcp_tool_request_duration_seconds{tool}` — tool 调用耗时直方图
-  - `mcp_upstream_requests_total{method, path, status_code}` — 上游 API 调用计数
-  - `mcp_upstream_request_duration_seconds{method, path}` — 上游 API 耗时直方图
+  - `mcp_upstream_requests_total{method, path, status_code}` — 上游 API 调用计数（path 使用 OpenAPI 路径模板如 `/api/channel/{id}`，非实际路径）
+  - `mcp_upstream_request_duration_seconds{method, path}` — 上游 API 耗时直方图（path 同上）
   - Go runtime 默认指标（goroutines、GC、内存等）
 
 ### Tracing (OpenTelemetry)
@@ -183,6 +188,22 @@ MCP_METRICS_PATH=/metrics       # 默认 /metrics
 - API Key 不在日志中输出，slog 对 auth header 自动脱敏
 - Tracing span 中只记录参数名不记录参数值
 - HTTP 模式下不内置认证（由前置网关/反向代理负责）
+- 注意：HTTP 模式下若无前置网关，所有 MCP tools（包括已启用的 admin tools）将暴露在未认证环境中
+
+## 优雅关停
+
+- 监听 SIGINT / SIGTERM 信号
+- 关停顺序：
+  1. 停止接受新的 MCP 请求
+  2. 等待进行中的 tool 调用完成（超时 10s 后强制终止）
+  3. Flush OTel tracing spans 和 logging 数据
+  4. 关闭 Prometheus metrics HTTP server
+  5. 关闭上游 HTTP client
+
+## 响应格式
+
+- 所有 tool 调用结果默认以 `TextContent` 返回原始 JSON 响应体
+- 上游返回非 JSON 时（如二进制文件），以 base64 编码的 `TextContent` 返回
 
 ## 项目结构
 

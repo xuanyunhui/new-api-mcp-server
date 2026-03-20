@@ -68,6 +68,9 @@
     },
     {
       "name": "未实现/Files"
+    },
+    {
+      "name": "Midjourney"
     }
   ],
   "paths": {
@@ -285,26 +288,26 @@
         ]
       }
     },
-	    "/v1/responses/compact": {
-	      "post": {
-	        "summary": "压缩对话 (OpenAI Responses API)",
-	        "deprecated": false,
-	        "description": "OpenAI Responses API，用于对长对话进行 compaction。",
-	        "operationId": "compactResponse",
+    "/v1/responses/compact": {
+      "post": {
+        "summary": "压缩对话 (OpenAI Responses API)",
+        "deprecated": false,
+        "description": "OpenAI Responses API，用于对长对话进行 compaction。",
+        "operationId": "compactResponse",
         "tags": [
           "OpenAI格式(Responses)"
         ],
         "parameters": [],
-	        "requestBody": {
-	          "content": {
-	            "application/json": {
-	              "schema": {
-	                "$ref": "#/components/schemas/ResponsesCompactionRequest"
-	              }
-	            }
-	          },
-	          "required": true
-	        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResponsesCompactionRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "成功压缩对话",
@@ -2305,6 +2308,611 @@
           }
         ]
       }
+    },
+    "/mj/submit/imagine": {
+      "post": {
+        "operationId": "mjImagine",
+        "summary": "Midjourney 文生图",
+        "description": "提交 Midjourney Imagine 任务，根据 prompt 生成图片",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "图片生成提示词"
+                  },
+                  "botType": {
+                    "type": "string",
+                    "description": "机器人类型",
+                    "enum": [
+                      "MID_JOURNEY",
+                      "NIJI_JOURNEY"
+                    ]
+                  },
+                  "notifyHook": {
+                    "type": "string",
+                    "description": "任务完成回调地址"
+                  },
+                  "state": {
+                    "type": "string",
+                    "description": "自定义状态值"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/describe": {
+      "post": {
+        "operationId": "mjDescribe",
+        "summary": "Midjourney 图生文",
+        "description": "提交 Midjourney Describe 任务，根据图片生成描述",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "base64Array": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "图片 base64 数组"
+                  },
+                  "notifyHook": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "base64Array"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/blend": {
+      "post": {
+        "operationId": "mjBlend",
+        "summary": "Midjourney 图片混合",
+        "description": "提交 Midjourney Blend 任务，混合多张图片",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "base64Array": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "图片 base64 数组（2-5张）"
+                  },
+                  "notifyHook": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "base64Array"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/change": {
+      "post": {
+        "operationId": "mjChange",
+        "summary": "Midjourney 变换操作",
+        "description": "对已有任务执行 Upscale、Variation 等变换操作",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "taskId": {
+                    "type": "string",
+                    "description": "原任务 ID"
+                  },
+                  "action": {
+                    "type": "string",
+                    "description": "变换动作",
+                    "enum": [
+                      "UPSCALE",
+                      "VARIATION",
+                      "REROLL"
+                    ]
+                  },
+                  "index": {
+                    "type": "integer",
+                    "description": "图片索引 (1-4)"
+                  }
+                },
+                "required": [
+                  "taskId",
+                  "action"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/simple-change": {
+      "post": {
+        "operationId": "mjSimpleChange",
+        "summary": "Midjourney 简单变换",
+        "description": "通过简单格式提交变换操作，如 \"taskId U1\"",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "description": "变换指令，格式: taskId U1/V2/R 等"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/action": {
+      "post": {
+        "operationId": "mjAction",
+        "summary": "Midjourney 按钮动作",
+        "description": "通过 customId 执行按钮动作（Upscale、Variation、Pan、Zoom 等）",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customId": {
+                    "type": "string",
+                    "description": "按钮 customId"
+                  },
+                  "taskId": {
+                    "type": "string",
+                    "description": "原任务 ID"
+                  },
+                  "notifyHook": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "customId",
+                  "taskId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/shorten": {
+      "post": {
+        "operationId": "mjShorten",
+        "summary": "Midjourney 提示词缩短",
+        "description": "提交 Shorten 任务，分析并缩短提示词",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "待缩短的提示词"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/modal": {
+      "post": {
+        "operationId": "mjModal",
+        "summary": "Midjourney 弹窗提交",
+        "description": "提交 Modal 弹窗操作（如 Custom Zoom 的参数）",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "taskId": {
+                    "type": "string",
+                    "description": "原任务 ID"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "弹窗输入内容"
+                  }
+                },
+                "required": [
+                  "taskId",
+                  "prompt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/edits": {
+      "post": {
+        "operationId": "mjEdits",
+        "summary": "Midjourney 图片编辑",
+        "description": "提交图片编辑任务（Inpaint/局部重绘）",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "taskId": {
+                    "type": "string",
+                    "description": "原任务 ID"
+                  },
+                  "prompt": {
+                    "type": "string",
+                    "description": "编辑提示词"
+                  },
+                  "maskBase64": {
+                    "type": "string",
+                    "description": "蒙版 base64"
+                  }
+                },
+                "required": [
+                  "taskId"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/video": {
+      "post": {
+        "operationId": "mjVideo",
+        "summary": "Midjourney 视频生成",
+        "description": "提交视频生成任务",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "prompt": {
+                    "type": "string",
+                    "description": "视频生成提示词"
+                  },
+                  "notifyHook": {
+                    "type": "string"
+                  },
+                  "state": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "prompt"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务提交结果"
+          }
+        }
+      }
+    },
+    "/mj/submit/upload-discord-images": {
+      "post": {
+        "operationId": "mjUploadImages",
+        "summary": "Midjourney 上传图片",
+        "description": "上传图片到 Discord 以供 Midjourney 使用",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "base64Array": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "图片 base64 数组"
+                  }
+                },
+                "required": [
+                  "base64Array"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传结果"
+          }
+        }
+      }
+    },
+    "/mj/task/{id}/fetch": {
+      "get": {
+        "operationId": "mjFetchTask",
+        "summary": "获取 Midjourney 任务状态",
+        "description": "根据任务 ID 查询任务进度和结果",
+        "tags": [
+          "Midjourney"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "任务 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "任务详情"
+          }
+        }
+      }
+    },
+    "/mj/task/{id}/image-seed": {
+      "get": {
+        "operationId": "mjGetImageSeed",
+        "summary": "获取 Midjourney 图片种子",
+        "description": "获取已生成图片的 seed 值",
+        "tags": [
+          "Midjourney"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "任务 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "图片种子信息"
+          }
+        }
+      }
+    },
+    "/mj/task/list-by-condition": {
+      "post": {
+        "operationId": "mjListTasks",
+        "summary": "查询 Midjourney 任务列表",
+        "description": "按条件批量查询任务",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "任务 ID 列表"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "任务列表"
+          }
+        }
+      }
+    },
+    "/mj/image/{id}": {
+      "get": {
+        "operationId": "mjGetImage",
+        "summary": "获取 Midjourney 图片",
+        "description": "通过代理获取 Midjourney 生成的图片",
+        "tags": [
+          "Midjourney"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "图片 ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "图片内容"
+          }
+        }
+      }
+    },
+    "/mj/insight-face/swap": {
+      "post": {
+        "operationId": "mjSwapFace",
+        "summary": "InsightFace 换脸",
+        "description": "使用 InsightFace 进行人脸替换",
+        "tags": [
+          "Midjourney"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "sourceBase64": {
+                    "type": "string",
+                    "description": "源人脸图片 base64"
+                  },
+                  "targetBase64": {
+                    "type": "string",
+                    "description": "目标图片 base64"
+                  }
+                },
+                "required": [
+                  "sourceBase64",
+                  "targetBase64"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "换脸结果"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -3170,9 +3778,9 @@
           }
         }
       },
-	      "ResponsesCompactionResponse": {
-	        "type": "object",
-	        "properties": {
+      "ResponsesCompactionResponse": {
+        "type": "object",
+        "properties": {
           "id": {
             "type": "string"
           },
@@ -3197,44 +3805,44 @@
             "type": "object",
             "properties": {}
           }
-	        }
-	      },
-	      "ResponsesCompactionRequest": {
-	        "type": "object",
-	        "required": [
-	          "model"
-	        ],
-	        "properties": {
-	          "model": {
-	            "type": "string"
-	          },
-	          "input": {
-	            "description": "输入内容，可以是字符串或消息数组",
-	            "oneOf": [
-	              {
-	                "type": "string"
-	              },
-	              {
-	                "type": "array",
-	                "items": {
-	                  "type": "object",
-	                  "properties": {}
-	                }
-	              }
-	            ]
-	          },
-	          "instructions": {
-	            "type": "string"
-	          },
-	          "previous_response_id": {
-	            "type": "string"
-	          }
-	        }
-	      },
-	      "ResponsesStreamResponse": {
-	        "type": "object",
-	        "properties": {
-	          "type": {
+        }
+      },
+      "ResponsesCompactionRequest": {
+        "type": "object",
+        "required": [
+          "model"
+        ],
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "input": {
+            "description": "输入内容，可以是字符串或消息数组",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {}
+                }
+              }
+            ]
+          },
+          "instructions": {
+            "type": "string"
+          },
+          "previous_response_id": {
+            "type": "string"
+          }
+        }
+      },
+      "ResponsesStreamResponse": {
+        "type": "object",
+        "properties": {
+          "type": {
             "type": "string"
           },
           "response": {

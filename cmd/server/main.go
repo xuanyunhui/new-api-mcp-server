@@ -86,8 +86,9 @@ func run() error {
 
 		relayHandler := handler.New(relayClient, client.SourceRelay, metrics)
 		count := registry.RegisterTools(server, relayDefs, registry.Options{
-			DisabledGroups: cfg.RelayDisabledGroups,
-			NamePrefix:     "",
+			EnabledGroups: cfg.RelayEnabledGroups,
+			AllGroups:     cfg.RelayAllGroups,
+			NamePrefix:    "",
 		}, relayHandler.MakeHandler)
 
 		slog.Info("registered relay tools", "count", count)
@@ -108,6 +109,7 @@ func run() error {
 
 		apiHandler := handler.New(relayClient, client.SourceAPI, metrics)
 		count := registry.RegisterTools(server, apiDefs, registry.Options{
+			AllGroups:  true,
 			NamePrefix: "api_",
 		}, apiHandler.MakeHandler)
 

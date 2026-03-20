@@ -16,8 +16,9 @@ type Config struct {
 	Transport string
 	HTTPAddr  string
 
-	RelayDisabledGroups []string
-	APIToolsEnabled     bool
+	RelayEnabledGroups []string
+	RelayAllGroups     bool
+	APIToolsEnabled    bool
 
 	LogLevel          string
 	LogFormat         string
@@ -53,8 +54,12 @@ func Load() (*Config, error) {
 		MetricsPath:       envOrDefault("MCP_METRICS_PATH", "/metrics"),
 	}
 
-	if groups := os.Getenv("MCP_RELAY_DISABLED_GROUPS"); groups != "" {
-		cfg.RelayDisabledGroups = strings.Split(groups, ",")
+	if groups := os.Getenv("MCP_RELAY_ENABLED_GROUPS"); groups != "" {
+		if groups == "all" {
+			cfg.RelayAllGroups = true
+		} else {
+			cfg.RelayEnabledGroups = strings.Split(groups, ",")
+		}
 	}
 
 	return cfg, nil

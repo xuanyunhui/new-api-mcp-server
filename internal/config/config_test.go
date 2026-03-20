@@ -8,7 +8,7 @@ import (
 func TestLoad_Defaults(t *testing.T) {
 	for _, key := range []string{
 		"NEW_API_BASE_URL", "NEW_API_KEY", "NEW_API_SYSTEM_KEY",
-		"MCP_TRANSPORT", "MCP_HTTP_ADDR", "MCP_RELAY_DISABLED_GROUPS",
+		"MCP_TRANSPORT", "MCP_HTTP_ADDR", "MCP_RELAY_ENABLED_GROUPS",
 		"MCP_API_TOOLS_ENABLED", "NEW_API_TIMEOUT",
 		"MCP_LOG_LEVEL", "MCP_LOG_FORMAT", "MCP_LOG_CONSOLE_ENABLED",
 		"OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_SERVICE_NAME",
@@ -73,7 +73,7 @@ func TestLoad_FullConfig(t *testing.T) {
 	t.Setenv("NEW_API_SYSTEM_KEY", "sk-sys")
 	t.Setenv("MCP_TRANSPORT", "http")
 	t.Setenv("MCP_HTTP_ADDR", ":3000")
-	t.Setenv("MCP_RELAY_DISABLED_GROUPS", "视频生成,未实现")
+	t.Setenv("MCP_RELAY_ENABLED_GROUPS", "视频生成,未实现")
 	t.Setenv("MCP_API_TOOLS_ENABLED", "true")
 	t.Setenv("NEW_API_TIMEOUT", "60s")
 	t.Setenv("MCP_LOG_LEVEL", "debug")
@@ -98,8 +98,11 @@ func TestLoad_FullConfig(t *testing.T) {
 	if cfg.Transport != "http" {
 		t.Errorf("Transport = %q, want %q", cfg.Transport, "http")
 	}
-	if len(cfg.RelayDisabledGroups) != 2 || cfg.RelayDisabledGroups[0] != "视频生成" {
-		t.Errorf("RelayDisabledGroups = %v, want [视频生成 未实现]", cfg.RelayDisabledGroups)
+	if len(cfg.RelayEnabledGroups) != 2 || cfg.RelayEnabledGroups[0] != "视频生成" {
+		t.Errorf("RelayEnabledGroups = %v, want [视频生成 未实现]", cfg.RelayEnabledGroups)
+	}
+	if cfg.RelayAllGroups {
+		t.Errorf("RelayAllGroups = true, want false")
 	}
 	if !cfg.APIToolsEnabled {
 		t.Errorf("APIToolsEnabled = false, want true")

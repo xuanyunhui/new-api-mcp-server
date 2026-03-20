@@ -44,7 +44,7 @@ func TestIntegration_FullPipeline(t *testing.T) {
 	h := handler.New(c, client.SourceRelay, nil)
 
 	count := registry.RegisterTools(server, defs, registry.Options{
-		DisabledGroups: []string{"未实现"},
+		AllGroups: true,
 	}, h.MakeHandler)
 	t.Logf("Registered %d relay tools", count)
 

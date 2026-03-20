@@ -7,54 +7,6 @@
   },
   "tags": [
     {
-      "name": "获取模型列表"
-    },
-    {
-      "name": "OpenAI格式(Chat)"
-    },
-    {
-      "name": "OpenAI格式(Responses)"
-    },
-    {
-      "name": "图片生成"
-    },
-    {
-      "name": "图片生成/OpenAI兼容格式"
-    },
-    {
-      "name": "图片生成/Qwen千问"
-    },
-    {
-      "name": "视频生成"
-    },
-    {
-      "name": "视频生成/Sora兼容格式"
-    },
-    {
-      "name": "视频生成/Kling格式"
-    },
-    {
-      "name": "视频生成/即梦格式"
-    },
-    {
-      "name": "OpenAI格式(Embeddings)"
-    },
-    {
-      "name": "文本补全(Completions)"
-    },
-    {
-      "name": "OpenAI音频(Audio)"
-    },
-    {
-      "name": "重排序(Rerank)"
-    },
-    {
-      "name": "Moderations"
-    },
-    {
-      "name": "Realtime"
-    },
-    {
       "name": "未实现"
     },
     {
@@ -71,6 +23,9 @@
     },
     {
       "name": "Anthropic"
+    },
+    {
+      "name": "OpenAI"
     }
   ],
   "paths": {
@@ -81,7 +36,7 @@
         "description": "获取当前可用的模型列表。\n\n根据请求头自动识别返回格式：\n- 包含 `x-api-key` 和 `anthropic-version` 头时返回 Anthropic 格式\n- 包含 `x-goog-api-key` 头或 `key` 查询参数时返回 Gemini 格式\n- 其他情况返回 OpenAI 格式\n",
         "operationId": "listModels",
         "tags": [
-          "获取模型列表"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -193,7 +148,7 @@
         "description": "根据对话历史创建模型响应。支持流式和非流式响应。\n\n兼容 OpenAI Chat Completions API。\n",
         "operationId": "createChatCompletion",
         "tags": [
-          "OpenAI格式(Chat)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -255,7 +210,7 @@
         "description": "OpenAI Responses API，用于创建模型响应。\n支持多轮对话、工具调用、推理等功能。\n",
         "operationId": "createResponse",
         "tags": [
-          "OpenAI格式(Responses)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -295,7 +250,7 @@
         "description": "OpenAI Responses API，用于对长对话进行 compaction。",
         "operationId": "compactResponse",
         "tags": [
-          "OpenAI格式(Responses)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -335,7 +290,7 @@
         "description": " 百炼qwen-image系列图片生成",
         "operationId": "createImage",
         "tags": [
-          "图片生成/Qwen千问"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -451,7 +406,7 @@
         "description": " 百炼qwen-image系列图片生成",
         "operationId": "createImage",
         "tags": [
-          "图片生成/Qwen千问"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -553,7 +508,7 @@
         "description": "OpenAI 兼容的视频生成接口。\n\n参考文档: https://platform.openai.com/docs/api-reference/videos/create\n",
         "operationId": "createVideo",
         "tags": [
-          "视频生成/Sora兼容格式"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -696,7 +651,7 @@
         "description": "OpenAI 兼容的视频任务状态查询接口。\n\n返回视频任务的详细状态信息。\n",
         "operationId": "getVideo",
         "tags": [
-          "视频生成/Sora兼容格式"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -789,7 +744,7 @@
         "description": "获取已完成视频任务的视频文件内容。\n\n此接口会代理返回视频文件流。\n",
         "operationId": "getVideoContent",
         "tags": [
-          "视频生成/Sora兼容格式"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -842,7 +797,7 @@
         "description": "使用 Kling 模型从文本描述生成视频。\n\n支持的模型：kling-v1, kling-v1-5 等\n",
         "operationId": "createKlingText2Video",
         "tags": [
-          "视频生成/Kling格式"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -900,7 +855,7 @@
         "description": "查询 Kling 文生视频任务的状态和结果。",
         "operationId": "getKlingText2Video",
         "tags": [
-          "视频生成/Kling格式"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -952,7 +907,7 @@
         "description": "使用 Kling 模型从图片生成视频。\n\n支持通过 image 参数传入图片 URL 或 Base64 编码的图片数据。\n",
         "operationId": "createKlingImage2Video",
         "tags": [
-          "视频生成/Kling格式"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1010,7 +965,7 @@
         "description": "查询 Kling 图生视频任务的状态和结果。",
         "operationId": "getKlingImage2Video",
         "tags": [
-          "视频生成/Kling格式"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -1062,7 +1017,7 @@
         "description": "即梦官方 API 格式的视频生成接口。\n\n支持通过 Action 参数指定操作类型：\n- `CVSync2AsyncSubmitTask`: 提交视频生成任务\n- `CVSync2AsyncGetResult`: 获取任务结果\n\n需要在查询参数中指定 Action 和 Version。\n",
         "operationId": "createJimengVideo",
         "tags": [
-          "视频生成/即梦格式"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -1173,7 +1128,7 @@
         "description": "提交视频生成任务，支持文生视频和图生视频。\n\n返回任务 ID，可通过 GET 接口查询任务状态。\n",
         "operationId": "createVideoGeneration",
         "tags": [
-          "视频生成"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1231,7 +1186,7 @@
         "description": "查询视频生成任务的状态和结果。\n\n任务状态：\n- `queued`: 排队中\n- `in_progress`: 生成中\n- `completed`: 已完成\n- `failed`: 失败\n",
         "operationId": "getVideoGeneration",
         "tags": [
-          "视频生成"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -1521,7 +1476,7 @@
         "description": "将文本转换为向量嵌入",
         "operationId": "createEmbedding",
         "tags": [
-          "OpenAI格式(Embeddings)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1561,7 +1516,7 @@
         "description": "基于给定提示创建文本补全",
         "operationId": "createCompletion",
         "tags": [
-          "文本补全(Completions)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1601,7 +1556,7 @@
         "description": "将音频转换为文本",
         "operationId": "createTranscription",
         "tags": [
-          "OpenAI音频(Audio)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1693,7 +1648,7 @@
         "description": "将音频翻译为英文文本",
         "operationId": "createTranslation",
         "tags": [
-          "OpenAI音频(Audio)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1760,7 +1715,7 @@
         "description": "将文本转换为音频",
         "operationId": "createSpeech",
         "tags": [
-          "OpenAI音频(Audio)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1801,7 +1756,7 @@
         "description": "根据查询对文档列表进行相关性重排序",
         "operationId": "createRerank",
         "tags": [
-          "重排序(Rerank)"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1841,7 +1796,7 @@
         "description": "检查文本内容是否违反使用政策",
         "operationId": "createModeration",
         "tags": [
-          "Moderations"
+          "OpenAI"
         ],
         "parameters": [],
         "requestBody": {
@@ -1881,7 +1836,7 @@
         "description": "建立 WebSocket 连接用于实时对话。\n\n**注意**: 这是一个 WebSocket 端点，需要使用 WebSocket 协议连接。\n\n连接 URL 示例: `wss://api.example.com/v1/realtime?model=gpt-4o-realtime`\n",
         "operationId": "createRealtimeSession",
         "tags": [
-          "Realtime"
+          "OpenAI"
         ],
         "parameters": [
           {
@@ -3161,7 +3116,7 @@
         "summary": "视频 Remix",
         "description": "基于已有视频创建 remix 变体",
         "tags": [
-          "视频生成/Sora兼容格式"
+          "OpenAI"
         ],
         "parameters": [
           {

@@ -40,9 +40,6 @@
       "name": "Claude格式(Messages)"
     },
     {
-      "name": "Gemini格式"
-    },
-    {
       "name": "OpenAI格式(Embeddings)"
     },
     {
@@ -71,6 +68,9 @@
     },
     {
       "name": "Midjourney"
+    },
+    {
+      "name": "Gemini"
     }
   ],
   "paths": {
@@ -163,7 +163,7 @@
         "description": "以 Gemini API 格式返回可用模型列表",
         "operationId": "listModelsGemini",
         "tags": [
-          "获取模型列表"
+          "Gemini"
         ],
         "parameters": [],
         "responses": {
@@ -1340,12 +1340,12 @@
     },
     "/v1beta/models/{model}:generateContent": {
       "post": {
-        "summary": "Gemini 图片(Nano Banana)",
+        "summary": "Gemini 内容生成",
         "deprecated": false,
-        "description": "Gemini 图片生成",
+        "description": "使用 Gemini 模型生成文本、图片等内容",
         "operationId": "geminiRelayV1Beta",
         "tags": [
-          "Gemini格式"
+          "Gemini"
         ],
         "parameters": [
           {
@@ -1465,12 +1465,12 @@
     },
     "/v1/engines/{model}/embeddings": {
       "post": {
-        "summary": "Gemini 嵌入(Embeddings)",
+        "summary": "Gemini 嵌入 (旧格式)",
         "deprecated": false,
-        "description": "使用指定引擎/模型创建嵌入",
+        "description": "使用 Gemini 模型创建文本嵌入（engines 路径格式）",
         "operationId": "createEngineEmbedding",
         "tags": [
-          "Gemini格式"
+          "Gemini"
         ],
         "parameters": [
           {
@@ -2910,6 +2910,247 @@
         "responses": {
           "200": {
             "description": "换脸结果"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:streamGenerateContent": {
+      "post": {
+        "operationId": "geminiStreamGenerateContent",
+        "summary": "Gemini 流式内容生成",
+        "description": "使用 Gemini 模型流式生成文本、图片等内容",
+        "tags": [
+          "Gemini"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Gemini 模型名称，如 gemini-2.0-flash"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contents": {
+                    "type": "array",
+                    "description": "对话内容",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "user",
+                            "model"
+                          ]
+                        },
+                        "parts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "generationConfig": {
+                    "type": "object",
+                    "description": "生成配置",
+                    "properties": {
+                      "temperature": {
+                        "type": "number"
+                      },
+                      "topP": {
+                        "type": "number"
+                      },
+                      "topK": {
+                        "type": "integer"
+                      },
+                      "maxOutputTokens": {
+                        "type": "integer"
+                      },
+                      "candidateCount": {
+                        "type": "integer"
+                      }
+                    }
+                  },
+                  "safetySettings": {
+                    "type": "array",
+                    "description": "安全设置",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "category": {
+                          "type": "string"
+                        },
+                        "threshold": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "contents"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "流式生成结果"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:embedContent": {
+      "post": {
+        "operationId": "geminiEmbedContent",
+        "summary": "Gemini 文本嵌入",
+        "description": "使用 Gemini 模型创建文本嵌入向量",
+        "tags": [
+          "Gemini"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Gemini 嵌入模型名称，如 text-embedding-004"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "object",
+                    "description": "待嵌入的内容",
+                    "properties": {
+                      "parts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "text": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "taskType": {
+                    "type": "string",
+                    "description": "嵌入任务类型",
+                    "enum": [
+                      "RETRIEVAL_QUERY",
+                      "RETRIEVAL_DOCUMENT",
+                      "SEMANTIC_SIMILARITY",
+                      "CLASSIFICATION",
+                      "CLUSTERING"
+                    ]
+                  },
+                  "title": {
+                    "type": "string",
+                    "description": "文档标题（仅 RETRIEVAL_DOCUMENT 时使用）"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "嵌入向量"
+          }
+        }
+      }
+    },
+    "/v1beta/models/{model}:countTokens": {
+      "post": {
+        "operationId": "geminiCountTokens",
+        "summary": "Gemini Token 计数",
+        "description": "计算给定内容的 token 数量",
+        "tags": [
+          "Gemini"
+        ],
+        "parameters": [
+          {
+            "name": "model",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Gemini 模型名称"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contents": {
+                    "type": "array",
+                    "description": "待计数的内容",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string"
+                        },
+                        "parts": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "text": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "required": [
+                  "contents"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Token 计数结果"
           }
         }
       }

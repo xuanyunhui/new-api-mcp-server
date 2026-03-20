@@ -37,9 +37,6 @@
       "name": "视频生成/即梦格式"
     },
     {
-      "name": "Claude格式(Messages)"
-    },
-    {
       "name": "OpenAI格式(Embeddings)"
     },
     {
@@ -71,6 +68,9 @@
     },
     {
       "name": "Gemini"
+    },
+    {
+      "name": "Anthropic"
     }
   ],
   "paths": {
@@ -1283,7 +1283,7 @@
         "description": "Anthropic Claude Messages API 格式的请求。\n需要在请求头中包含 `anthropic-version`。\n",
         "operationId": "createMessage",
         "tags": [
-          "Claude格式(Messages)"
+          "Anthropic"
         ],
         "parameters": [
           {

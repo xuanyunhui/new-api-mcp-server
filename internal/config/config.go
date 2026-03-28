@@ -13,8 +13,9 @@ type Config struct {
 	SystemKey string
 	Timeout   time.Duration
 
-	Transport string
-	HTTPAddr  string
+	Transport     string
+	HTTPAddr      string
+	HTTPAuthToken string
 
 	RelayEnabledGroups []string
 	RelayAllGroups     bool
@@ -44,6 +45,7 @@ func Load() (*Config, error) {
 		Timeout:           parseDuration("NEW_API_TIMEOUT", 30*time.Second),
 		Transport:         envOrDefault("MCP_TRANSPORT", "stdio"),
 		HTTPAddr:          envOrDefault("MCP_HTTP_ADDR", ":8080"),
+		HTTPAuthToken:     os.Getenv("MCP_HTTP_AUTH_TOKEN"),
 		APIToolsEnabled:   os.Getenv("MCP_API_TOOLS_ENABLED") == "true",
 		LogLevel:          envOrDefault("MCP_LOG_LEVEL", "info"),
 		LogFormat:         envOrDefault("MCP_LOG_FORMAT", "json"),

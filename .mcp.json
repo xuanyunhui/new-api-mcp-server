@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "new-api": {
+      "type": "http",
+      "url": "https://new-api-mcp-server.dev.bestheme.ac.cn/"
+    }
+  }
+}

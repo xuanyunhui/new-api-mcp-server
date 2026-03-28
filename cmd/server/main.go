@@ -141,11 +141,15 @@ func run() error {
 	// Run transport
 	switch cfg.Transport {
 	case "http":
-		slog.Info("starting HTTP transport", "addr", cfg.HTTPAddr)
-		httpHandler := mcp.NewStreamableHTTPHandler(
+		slog.Info("starting HTTP transport", "addr", cfg.HTTPAddr, "auth_enabled", cfg.HTTPAuthToken != "")
+		mcpHandler := mcp.NewStreamableHTTPHandler(
 			func(r *http.Request) *mcp.Server { return server },
 			nil,
 		)
+		var httpHandler http.Handler = mcpHandler
+		if cfg.HTTPAuthToken != "" {
+			httpHandler = authMiddleware(cfg.HTTPAuthToken, mcpHandler)
+		}
 		httpServer := &http.Server{
 			Addr:    cfg.HTTPAddr,
 			Handler: httpHandler,
@@ -165,4 +169,16 @@ func run() error {
 	}
 
 	return nil
+}
+
+func authMiddleware(token string, next http.Handler) http.Handler {
+	expected := "Bearer " + token
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		auth := r.Header.Get("Authorization")
+		if auth != expected {
+			http.Error(w, `{"error":"unauthorized"}`, http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
 }
